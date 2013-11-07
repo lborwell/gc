@@ -1,4 +1,7 @@
-all : gc
+all : stack.o gc
 
-gc : src/gc
-	gcc -std=c99 src/gc.c -o bin/gc
+stack.o : src/stack
+	gcc -c src/stack.c -o bin/stack.o
+
+gc : src/gc.c bin/stack.o
+	gcc src/gc.c bin/stack.o -o bin/gc
