@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "data.h"
 
 typedef enum { INT, 
 	BOOL, 
@@ -7,7 +8,7 @@ typedef enum { INT,
 	DATA,
 	BIGDATA,
 	RANGE,
-	LAMDA,
+	LAMBDA,
 	SOFT,
 	PHANTOM,
 	WEAK
@@ -22,5 +23,8 @@ typedef struct snode{
 Stack* createNode(type, void*);
 void printStack(Stack*);
 void printNode(Stack*);
+Stack* initStack();
+void push(Stack**,type,void*);
+void* pop(Stack**);
 
 int main();
