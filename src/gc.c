@@ -33,8 +33,6 @@ int main(){
     puts("=========================================");
     printHeap(h);
 
-	//printStack(s);
-
     return 0;
 }
 
