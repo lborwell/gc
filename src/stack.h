@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "data.h"
 
 typedef enum { INT, 
 	BOOL, 
@@ -15,16 +14,15 @@ typedef enum { INT,
 } type;
 
 typedef struct snode{
-	type t;
-	void* data;
+	int data;
 	struct snode* next;
 } Stack;
 
-Stack* createNode(type, void*);
+Stack* createNode(int);
 void printStack(Stack*);
 void printNode(Stack*);
 Stack* initStack();
-void push(Stack**,type,void*);
-void* pop(Stack**);
+void push(Stack**,int);
+int pop(Stack**);
 
 int main();
