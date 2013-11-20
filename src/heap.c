@@ -3,7 +3,7 @@
 
 heap* heapCreate(){
     heap* h = malloc(sizeof(heap));
-    h->hpLimit = HEAP_SIZE/2;
+    h->hpLimit = HEAP_SIZE;
     return h;
 }
 
@@ -59,6 +59,11 @@ void heapAdd(heap* h, type t, void* data){
     (h->hp)++;
 }
 
+void simplePrintHeap(heap* h){
+    int i;
+    for(i=0; i<HEAP_SIZE; i++)
+        printf("%i ",h->heap[i]);
+}
 
 void printHeap(heap* h){
     int i=0;

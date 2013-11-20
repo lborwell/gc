@@ -10,7 +10,8 @@ typedef enum { INT,
 	LAMBDA,
 	SOFT,
 	PHANTOM,
-	WEAK
+	WEAK,
+    FWD
 } type;
 
 typedef struct snode{
