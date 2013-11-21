@@ -33,4 +33,5 @@ void printStack(Stack* n){
 }
 
 void printNode(Stack* n){
+	printf("%i\n",n->data);
 }

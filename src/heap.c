@@ -41,8 +41,20 @@ void heapAdd(heap* h, type t, void* data){
                 break;
             }
 
+         
         case LAMBDA:
-        case BIGDATA:
+            {
+                int* p = (int*)data;
+                nextelem = p[0];
+                nextelem = p[1];
+                int i = 0;
+                while(i<=p[1]){
+                    nextelem = p[i+2];
+                    i++;
+                }
+                break;
+            }
+        case BIGDATA: 
             {
                 int* p = (int*)data;
                 nextelem = p[0];
@@ -96,8 +108,8 @@ void printHeap(heap* h){
                 }
             case LAMBDA:
                 {
-                    printf("LAMBDA n:%i c:%i", heap[i+1], heap[i+2]);
-                    int lim = heap[i+1];
+                    printf("LAMBDA c:%i n:%i", heap[i+1], heap[i+2]);
+                    int lim = heap[i+2];
                     int x = 0;
                     i+=3;
                     while(x < lim){
