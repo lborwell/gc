@@ -1,23 +1,24 @@
 #include "gc.h"
 
 int main(){
-	Stack* s = initStack();
-    push(&s,21);
-	push(&s,14);
-	push(&s,2);
-	push(&s,0);
-	
+    Stack* s = initStack();
+    //push(&s,25);
+    push(&s,19);
+    push(&s,13);
+    push(&s,2);
+    push(&s,0);
+    
     int* inn = malloc(sizeof(int));
     *inn = 5;
     int* in = malloc(sizeof(int));
     *in = 10;
     char* str = malloc(sizeof(char)*6);
-    str = "hello\0";
+    str = "hello";
     int* boo = malloc(sizeof(int));
     *boo = 0;
-    int bigdata[] = { 3,1,25,0,0 };
-    int range[] = { 50,60 };
-    int lambda[] = { 8,1,2 };
+    int bigdata[] = { 3,1,23,25,6 };
+    int range[] = { 0,0 };
+    int lambda[] = { 8,1,6 };
     int* soft = malloc(sizeof(int));
     *soft = 9;
     int* weak = malloc(sizeof(int));
@@ -31,9 +32,11 @@ int main(){
     heapAdd(h,BIGDATA,bigdata);
     heapAdd(h,LAMBDA,lambda);
     heapAdd(h,INT,inn);
+    heapAdd(h,RANGE,range);
     puts("=========================================");
     printHeap(h);
     printStack(s);
+    //simplePrintHeap(h);
     puts("=========================================");
     collect(s,&h);
     printHeap(h);
@@ -44,6 +47,9 @@ int main(){
     return 0;
 }
 
+/*
+*
+*/
 void collect(Stack* s, heap** h){
     heap* to = heapCreate();
     
@@ -59,6 +65,9 @@ void collect(Stack* s, heap** h){
     *h = to;
 }
 
+/*
+*
+*/
 int evac(int pos, heap* from, heap* to){
     int* theap = to->heap;
     int* fheap = from->heap;
@@ -88,18 +97,17 @@ int evac(int pos, heap* from, heap* to){
                 int x = 1;
                 do{
                     theap[++(to->hp)] = fheap[x+pos];
-                }while((char)fheap[(x++) + pos] != '\0');
-                theap[++(to->hp)] = (int)'\0';
+                }while(fheap[(x++) + pos] != 0);
                 break;
             }
 
         case BIGDATA:
                 memcpy(&theap[++(to->hp)], &fheap[pos+1], (fheap[pos+1]+2)*sizeof(int));
-                to->hp += fheap[pos+1]+2;
+                to->hp += fheap[pos+1]+1;
                 break;
         case LAMBDA:
                 memcpy(&theap[++(to->hp)], &fheap[pos+1], (fheap[pos+2]+2)*sizeof(int));
-                to->hp += fheap[pos+2]+2;
+                to->hp += fheap[pos+2]+1;
                 break;
     }
 
@@ -110,10 +118,14 @@ int evac(int pos, heap* from, heap* to){
     return cpos;
 }
 
+/*
+*
+*/
 void scavenge(heap* from, heap* to){
     int i=0;
     while(i < to->hp){
-//        printf("%i ",i);
+        //printf("i:%i hp:%i\n",i,to->hp);
+        //printHeap(to);
         switch(to->heap[i]){
             case INT:
             case BOOL:
@@ -122,8 +134,9 @@ void scavenge(heap* from, heap* to){
 
             case STRING:
                 i++;
-                while((char)to->heap[i] != '\0')
+                while(to->heap[i] != 0)
                     i++;
+                i++;
                 break;
 
             case RANGE:
@@ -134,18 +147,20 @@ void scavenge(heap* from, heap* to){
 
             case BIGDATA:
                 {
-                    int lim = i + to->heap[i+1] + 2;
-                    i += 2;
-                    while(i++ <= lim)
+                    int lim = i + to->heap[i+1] + 3;
+                    i+=2;
+                    while(++i < lim)
                         to->heap[i] = evac(to->heap[i], from, to);
+                    //i++;
                     break;
                 }
             case LAMBDA:
                 {
-                    int lim = i + to->heap[i+2] + 2;
+                    int lim = i + to->heap[i+2] + 3;
                     i+=2;
-                    while(i++ <= lim)
+                    while(++i < lim)
                         to->heap[i] = evac(to->heap[i], from, to);
+                    //i++;
                     break;
                 }
 

@@ -26,9 +26,8 @@ void heapAdd(heap* h, type t, void* data){
             {
                 char* p = (char*)data;
                 nextelem = (int)p[0];
-                while((p++)[0] != '\0')
+                while((char*)(p++)[0] != '\0')
                     nextelem = (int)p[0];
-                nextelem = (int)'\0';
                 break;
             }
 
@@ -48,7 +47,7 @@ void heapAdd(heap* h, type t, void* data){
                 nextelem = p[0];
                 nextelem = p[1];
                 int i = 0;
-                while(i<=p[1]){
+                while(i<p[1]){
                     nextelem = p[i+2];
                     i++;
                 }
@@ -60,7 +59,7 @@ void heapAdd(heap* h, type t, void* data){
                 nextelem = p[0];
                 nextelem = p[1];
                 int i = 0;
-                while(i<=p[0]){
+                while(i<p[0]){
                     nextelem = p[i+2];
                     i++;
                 }
@@ -74,13 +73,15 @@ void heapAdd(heap* h, type t, void* data){
 void simplePrintHeap(heap* h){
     int i;
     for(i=0; i<HEAP_SIZE; i++)
-        printf("%i ",h->heap[i]);
+        printf("%i:%i ",i,h->heap[i]);
+    puts("");
 }
 
 void printHeap(heap* h){
     int i=0;
     int* heap = h->heap;
     while(i < h->hp){
+        printf("%i ", i);
         switch(heap[i]){
             case INT:
                 printf("INT %i", heap[++i]);
@@ -90,9 +91,10 @@ void printHeap(heap* h){
                 break;
             case STRING:
                 printf("STRING ");
-                while((char*)heap[i++] != '\0')
+                while(heap[++i] != 0)
                     printf("%c",(char)heap[i]);
                 break;
+
             case BIGDATA:
                 {
                     printf("BIGDATA n:%i c:%i", heap[i+1], heap[i+2]);
@@ -103,7 +105,7 @@ void printHeap(heap* h){
                         printf(" %i",heap[i+x]);
                         x++;
                     }
-                    i+=lim;
+                    i+=lim-1;
                     break;
                 }
             case LAMBDA:
@@ -116,9 +118,10 @@ void printHeap(heap* h){
                         printf(" %i",heap[i+x]);
                         x++;
                     }
-                    i+=lim;
+                    i+=lim-1;
                     break;
                 }
+
             case SOFT:
                 printf("SOFT %i",heap[++i]);
                 break;
