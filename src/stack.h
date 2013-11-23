@@ -22,7 +22,7 @@ typedef struct snode{
 Stack* createNode(int);
 void printStack(Stack*);
 void printNode(Stack*);
-Stack* initStack();
+Stack* stackCreate();
 void push(Stack**,int);
 int pop(Stack**);
 

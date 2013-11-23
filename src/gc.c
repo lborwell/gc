@@ -1,9 +1,10 @@
 #include "gc.h"
 
 extern heap* datacons;
+Stack* weakptrs;
 
 int main(){
-    Stack* s = initStack();
+    Stack* s = stackCreate();
     push(&s,28);
     push(&s,19);
     push(&s,13);
@@ -18,7 +19,7 @@ int main(){
     str = "hello";
     int* boo = malloc(sizeof(int));
     *boo = 0;
-    int data[] = { 2,2,0 };
+    int data[] = { 2,4,0 };
     int bigdata[] = { 3,1,23,25,6 };
     int range[] = { 0,0 };
     int lambda[] = { 8,1,6 };
@@ -56,6 +57,7 @@ int main(){
 */
 void collect(Stack* s, heap** h){
     heap* to = heapCreate();
+    weakptrs = stackCreate();
     
     //evacuate things pointed to from the stack
     do{
@@ -64,6 +66,14 @@ void collect(Stack* s, heap** h){
 
     //scavenge the to-space
     scavenge(*h,to);
+
+    int i;
+    while((i = pop(&weakptrs)) != -1){
+        if((*h)->heap[to->heap[i+1]] == FWD)
+            to->heap[i+1] = (*h)->heap[to->heap[i+1]+1];
+        else
+            to->heap[i+1] = -1;
+    }
 
     free(*h);
     *h = to;
@@ -85,9 +95,10 @@ int evac(int pos, heap* from, heap* to){
     theap[to->hp] = fheap[pos];
 
     switch(from->heap[pos]){
+        case WEAK:
+            push(&weakptrs, to->hp);
         case INT:
         case BOOL:
-        
             memcpy(&theap[++(to->hp)], &fheap[pos+1], sizeof(int));
             break;
 
@@ -118,8 +129,6 @@ int evac(int pos, heap* from, heap* to){
             memcpy(&theap[++(to->hp)], &fheap[pos+1], (datacons->heap[fheap[pos+1]]+1)*sizeof(int));
             to->hp += datacons->heap[fheap[pos+1]];
             break;
-
-        case WEAK:
 
         case SOFT:
 

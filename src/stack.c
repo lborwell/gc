@@ -14,13 +14,17 @@ void push(Stack** s, int elem){
 }
 
 int pop(Stack** s){
+	if(!(*s))
+		return -1;
 	Stack* r = *s;
 	*s = (*s)->next;
-	r->next = NULL;
-	return r->data;
+	//r->next = NULL;
+	int d = r->data;
+	free(r);
+	return d;
 }
 
-Stack* initStack(){
+Stack* stackCreate(){
 	Stack* r = NULL;
 	return r;
 }
