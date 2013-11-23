@@ -1,11 +1,13 @@
 #include "gc.h"
 
+extern heap* datacons;
+
 int main(){
     Stack* s = initStack();
-    //push(&s,25);
+    push(&s,28);
     push(&s,19);
     push(&s,13);
-    push(&s,2);
+    //push(&s,2);
     push(&s,0);
     
     int* inn = malloc(sizeof(int));
@@ -16,6 +18,7 @@ int main(){
     str = "hello";
     int* boo = malloc(sizeof(int));
     *boo = 0;
+    int data[] = { 2,2,0 };
     int bigdata[] = { 3,1,23,25,6 };
     int range[] = { 0,0 };
     int lambda[] = { 8,1,6 };
@@ -24,7 +27,7 @@ int main(){
     int* weak = malloc(sizeof(int));
     *weak = 2;
 
-    heap* h = heapCreate();
+    heap* h = initHeaps();
     heapAdd(h,INT,in);
     heapAdd(h,BOOL,boo);
     heapAdd(h,WEAK,weak);
@@ -33,6 +36,7 @@ int main(){
     heapAdd(h,LAMBDA,lambda);
     heapAdd(h,INT,inn);
     heapAdd(h,RANGE,range);
+    heapAdd(h,DATA,data);
     puts("=========================================");
     printHeap(h);
     printStack(s);
@@ -83,7 +87,7 @@ int evac(int pos, heap* from, heap* to){
     switch(from->heap[pos]){
         case INT:
         case BOOL:
-        case WEAK:
+        
             memcpy(&theap[++(to->hp)], &fheap[pos+1], sizeof(int));
             break;
 
@@ -102,13 +106,25 @@ int evac(int pos, heap* from, heap* to){
             }
 
         case BIGDATA:
-                memcpy(&theap[++(to->hp)], &fheap[pos+1], (fheap[pos+1]+2)*sizeof(int));
-                to->hp += fheap[pos+1]+1;
-                break;
+            memcpy(&theap[++(to->hp)], &fheap[pos+1], (fheap[pos+1]+2)*sizeof(int));
+            to->hp += fheap[pos+1]+1;
+            break;
         case LAMBDA:
-                memcpy(&theap[++(to->hp)], &fheap[pos+1], (fheap[pos+2]+2)*sizeof(int));
-                to->hp += fheap[pos+2]+1;
-                break;
+            memcpy(&theap[++(to->hp)], &fheap[pos+1], (fheap[pos+2]+2)*sizeof(int));
+            to->hp += fheap[pos+2]+1;
+            break;
+
+        case DATA:
+            memcpy(&theap[++(to->hp)], &fheap[pos+1], (datacons->heap[fheap[pos+1]]+1)*sizeof(int));
+            to->hp += datacons->heap[fheap[pos+1]];
+            break;
+
+        case WEAK:
+
+        case SOFT:
+
+        case PHANTOM:
+            break;
     }
 
     to->hp++;
@@ -129,6 +145,8 @@ void scavenge(heap* from, heap* to){
         switch(to->heap[i]){
             case INT:
             case BOOL:
+            case WEAK:
+            case SOFT:
                 i+=2;
                 break;
 
@@ -139,6 +157,7 @@ void scavenge(heap* from, heap* to){
                 i++;
                 break;
 
+            case PHANTOM:
             case RANGE:
                 to->heap[i+1] = evac(to->heap[i+1], from, to);
                 to->heap[i+2] = evac(to->heap[i+2], from, to);
@@ -151,7 +170,6 @@ void scavenge(heap* from, heap* to){
                     i+=2;
                     while(++i < lim)
                         to->heap[i] = evac(to->heap[i], from, to);
-                    //i++;
                     break;
                 }
             case LAMBDA:
@@ -160,17 +178,17 @@ void scavenge(heap* from, heap* to){
                     i+=2;
                     while(++i < lim)
                         to->heap[i] = evac(to->heap[i], from, to);
-                    //i++;
                     break;
                 }
 
             case DATA:
-            case SOFT:
-
-            case PHANTOM:
-
-            case WEAK:
-                break;
+                {
+                    int lim = i + datacons->heap[to->heap[i+1]] + 2;
+                    i++;
+                    while(++i < lim)
+                        to->heap[i] = evac(to->heap[i], from, to);
+                    break;
+                }
         }
     }
 }

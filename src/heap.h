@@ -11,3 +11,5 @@ heap* heapCreate();
 void heapAdd(heap*, type, void*);
 void printHeap(heap*);
 void simplePrintHeap(heap*);
+heap* initHeaps();
+void dataConsCreate();

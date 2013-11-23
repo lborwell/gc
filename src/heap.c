@@ -1,10 +1,24 @@
 #include "heap.h"
 #define nextelem h->heap[++(h->hp)]
 
+heap* datacons;
+
+heap* initHeaps(){
+    dataConsCreate();
+    return heapCreate();
+}
+
 heap* heapCreate(){
     heap* h = malloc(sizeof(heap));
     h->hpLimit = HEAP_SIZE;
+    h->hp = 0;
     return h;
+}
+
+void dataConsCreate(){
+    datacons = malloc(sizeof(heap));
+    datacons->hpLimit = HEAP_SIZE / 3;
+    datacons->hp = 0;
 }
 
 /*
@@ -66,6 +80,19 @@ void heapAdd(heap* h, type t, void* data){
                 break;
             }
 
+        case DATA:
+            {
+                int* p = (int*)data;
+                datacons->heap[datacons->hp] = p[0];
+                nextelem = datacons->hp;
+                int i=0;
+                while(i<p[0]){
+                    nextelem = p[i+1];
+                    i++;
+                }
+                (datacons->hp)++;
+                break;
+            }
     }
     (h->hp)++;
 }
@@ -136,6 +163,21 @@ void printHeap(heap* h){
                 printf("RANGE %i %i",heap[i+1],heap[i+2]);
                 i+=2;
                 break;
+
+            case DATA:
+                {
+                    printf("DATA c:%i", heap[i+1]);
+                    int lim = datacons->heap[heap[i+1]];
+                    int x = 0;
+                    i+=2;
+                    while(x < lim){
+                        printf(" %i",heap[i+x]);
+                        x++;
+                    }
+                    i+=lim-1;
+
+                    break;
+                }
         }
         printf("\n");
         i++;
