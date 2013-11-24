@@ -19,12 +19,12 @@ int main(){
     str = "hello";
     int* boo = malloc(sizeof(int));
     *boo = 0;
-    int data[] = { 2,4,0 };
+    int data[] = { 2,4,32 };
     int bigdata[] = { 3,1,23,25,6 };
     int range[] = { 0,0 };
     int lambda[] = { 8,1,6 };
     int* soft = malloc(sizeof(int));
-    *soft = 9;
+    *soft = 0;
     int* weak = malloc(sizeof(int));
     *weak = 2;
 
@@ -38,6 +38,7 @@ int main(){
     heapAdd(h,INT,inn);
     heapAdd(h,RANGE,range);
     heapAdd(h,DATA,data);
+    heapAdd(h,SOFT,soft);
     puts("=========================================");
     printHeap(h);
     printStack(s);
@@ -99,6 +100,7 @@ int evac(int pos, heap* from, heap* to){
             push(&weakptrs, to->hp);
         case INT:
         case BOOL:
+        case SOFT:
             memcpy(&theap[++(to->hp)], &fheap[pos+1], sizeof(int));
             break;
 
@@ -130,8 +132,6 @@ int evac(int pos, heap* from, heap* to){
             to->hp += datacons->heap[fheap[pos+1]];
             break;
 
-        case SOFT:
-
         case PHANTOM:
             break;
     }
@@ -155,7 +155,6 @@ void scavenge(heap* from, heap* to){
             case INT:
             case BOOL:
             case WEAK:
-            case SOFT:
                 i+=2;
                 break;
 
@@ -197,6 +196,16 @@ void scavenge(heap* from, heap* to){
                     while(++i < lim)
                         to->heap[i] = evac(to->heap[i], from, to);
                     break;
+                }
+
+            case SOFT:
+                {
+                    if(from->hp < from->hpLimit / 2)
+                        //don't collect if >50% memory left
+                        to->heap[i+1] = evac(to->heap[i+1],from,to);
+                    else
+                        to->heap[i+1] = -1;
+                    i+=2;
                 }
         }
     }
