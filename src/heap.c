@@ -2,9 +2,13 @@
 #define nextelem h->heap[++(h->hp)]
 
 heap* datacons;
+heap* bigdataheap;
+Stack* bigdataindex;
 
 heap* initHeaps(){
     dataConsCreate();
+    bigdataHeapCreate();
+    bigdataindex = stackCreate();
     return heapCreate();
 }
 
@@ -19,6 +23,12 @@ void dataConsCreate(){
     datacons = malloc(sizeof(heap));
     datacons->hpLimit = HEAP_SIZE / 3;
     datacons->hp = 0;
+}
+
+void bigdataHeapCreate(){
+    bigdataheap = malloc(sizeof(heap));
+    bigdataheap->hpLimit = HEAP_SIZE / 4;
+    bigdataheap->hp = 0;
 }
 
 /*
@@ -70,13 +80,14 @@ void heapAdd(heap* h, type t, void* data){
         case BIGDATA: 
             {
                 int* p = (int*)data;
-                nextelem = p[0];
-                nextelem = p[1];
-                int i = 0;
-                while(i<p[0]){
-                    nextelem = p[i+2];
-                    i++;
-                }
+
+                //push(&bigdataindex,bigdataheap->hp);
+                nextelem = bigdataheap->hp;
+
+                bigdataheap->heap[bigdataheap->hp] = BDHEAP;
+                (bigdataheap->hp)++;
+                memcpy(&bigdataheap->heap[bigdataheap->hp], &p[0], sizeof(int)*(p[0]+2));
+                (bigdataheap->hp)++;
                 break;
             }
 
@@ -124,15 +135,17 @@ void printHeap(heap* h){
 
             case BIGDATA:
                 {
-                    printf("BIGDATA n:%i c:%i", heap[i+1], heap[i+2]);
-                    int lim = heap[i+1];
+                    int* bdh = bigdataheap->heap;
+                    i++;
+                    printf("BIGDATA n:%i c:%i", bdh[heap[i]+1], bdh[heap[i]+2]);
+
+                    int lim = bdh[heap[i]+1];
                     int x = 0;
-                    i+=3;
+                    int c = heap[i]+3;
                     while(x < lim){
-                        printf(" %i",heap[i+x]);
+                        printf(" %i",bdh[c+x]);
                         x++;
                     }
-                    i+=lim-1;
                     break;
                 }
             case LAMBDA:

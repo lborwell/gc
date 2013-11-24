@@ -1,4 +1,6 @@
 #include "stack.h"
+#include <string.h>
+
 #define HEAP_SIZE 256
 
 typedef struct {
@@ -13,3 +15,4 @@ void printHeap(heap*);
 void simplePrintHeap(heap*);
 heap* initHeaps();
 void dataConsCreate();
+void bigdataHeapCreate();

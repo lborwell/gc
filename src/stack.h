@@ -11,7 +11,8 @@ typedef enum { INT,
 	SOFT,
 	PHANTOM,
 	WEAK,
-    FWD
+    FWD,
+    BDHEAP
 } type;
 
 typedef struct snode{
@@ -25,5 +26,6 @@ void printNode(Stack*);
 Stack* stackCreate();
 void push(Stack**,int);
 int pop(Stack**);
+void freeStack(Stack*);
 
 int main();

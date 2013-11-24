@@ -29,6 +29,13 @@ Stack* stackCreate(){
 	return r;
 }
 
+void freeStack(Stack* s){
+	if(!s)
+		return;
+	freeStack(s->next);
+	free(s);
+}
+
 void printStack(Stack* n){
 	if(n->next)
 		printStack(n->next);
