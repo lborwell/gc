@@ -3,12 +3,20 @@
 Stack* createNode(int data){
 	Stack* s = malloc(sizeof(Stack));
 	s->data = data;
+	s->bdloc = 0;
 	s->next = NULL;
 	return s;
 }
 
 void push(Stack** s, int elem){
 	Stack* n = createNode(elem);
+	n->next = *s;
+	*s = n;
+}
+
+void pushBD(Stack** s, int data, int bd){
+	Stack* n = createNode(data);
+	n->bdloc = bd;
 	n->next = *s;
 	*s = n;
 }

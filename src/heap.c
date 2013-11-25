@@ -81,13 +81,12 @@ void heapAdd(heap* h, type t, void* data){
             {
                 int* p = (int*)data;
 
-                //push(&bigdataindex,bigdataheap->hp);
                 nextelem = bigdataheap->hp;
 
                 bigdataheap->heap[bigdataheap->hp] = BDHEAP;
                 (bigdataheap->hp)++;
                 memcpy(&bigdataheap->heap[bigdataheap->hp], &p[0], sizeof(int)*(p[0]+2));
-                (bigdataheap->hp)++;
+                bigdataheap->hp += p[0]+2;
                 break;
             }
 
@@ -148,9 +147,24 @@ void printHeap(heap* h){
                     }
                     break;
                 }
+
+            case BDHEAP:
+                {
+                    printf("BIGDATA n:%i c:%i", heap[i+1], heap[i+2]);
+                    int lim = heap[i+1];
+                    int x = 0;
+                    i+=3;
+                    while(x < lim){
+                        printf(" %i",heap[i+x]);
+                        x++;
+                    }
+                    i+=lim-1;
+                    break;
+                }
+
             case LAMBDA:
                 {
-                    printf("LAMBDA c:%i n:%i", heap[i+1], heap[i+2]);
+                    printf("LAMBDA f:%i n:%i", heap[i+1], heap[i+2]);
                     int lim = heap[i+2];
                     int x = 0;
                     i+=3;

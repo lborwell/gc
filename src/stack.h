@@ -17,6 +17,7 @@ typedef enum { INT,
 
 typedef struct snode{
 	int data;
+	int bdloc;
 	struct snode* next;
 } Stack;
 
@@ -25,6 +26,7 @@ void printStack(Stack*);
 void printNode(Stack*);
 Stack* stackCreate();
 void push(Stack**,int);
+void pushBD(Stack**,int,int);
 int pop(Stack**);
 void freeStack(Stack*);
 

@@ -16,7 +16,7 @@ int main(){
     //push(&s,2);
     push(&s,0);
     
-    collectioncount = 1;
+    collectioncount = 2;
     int* inn = malloc(sizeof(int));
     *inn = 5;
     int* in = malloc(sizeof(int));
@@ -34,6 +34,7 @@ int main(){
     int* weak = malloc(sizeof(int));
     *weak = 2;
 
+    //build test heap
     heap* h = initHeaps();
     heapAdd(h,INT,in);
     heapAdd(h,BOOL,boo);
@@ -45,16 +46,29 @@ int main(){
     heapAdd(h,RANGE,range);
     heapAdd(h,DATA,data);
     heapAdd(h,SOFT,soft);
+    heapAdd(h,BIGDATA,bigdata);
+
+    //print results
+    puts("\nStarting heap:");
     puts("=========================================");
     printHeap(h);
-    printStack(s);
-    //simplePrintHeap(h);
+    puts("\nStarting stack:");
     puts("=========================================");
+    printStack(s);
+    
     collect(s,&h,0);
+
+    puts("\nCollected heap:");
+    puts("=========================================");
     printHeap(h);
+
+    puts("\nCollected stack:");
+    puts("=========================================");
     printStack(s);
+
+    puts("\nBigdata heap:");
     puts("====================================");
-    //simplePrintHeap(bigdataheap);
+    printHeap(bigdataheap);
 
     return 0;
 }
@@ -65,14 +79,18 @@ int main(){
 void collect(Stack* s, heap** h, int bd){
     heap* to = heapCreate();
     weakptrs = stackCreate();
-    
+
+    if(!s) return;
+
     //evacuate things pointed to from the stack
     do{
-        s->data = evac(s->data, *h, to); 
+        //printf("stack data before: %i  Stack bdloc before: %i\n",s->data,s->bdloc);
+        s->data = evac(s->data, *h, to);
+        //printf("stack data after: %i  Stack bdloc after: %i\n",s->data,s->bdloc);
     }while(s=s->next);
 
     if(bd){
-        freeStack(bigdataindex);
+        *h = to;
         return;
     }
 
@@ -90,8 +108,16 @@ void collect(Stack* s, heap** h, int bd){
     free(*h);
     *h = to;
 
-    if(!(collectioncount % BIGDATACOLLECT))
+    //collect big data heap
+    if(!(collectioncount % BIGDATACOLLECT)){
+        if(!bigdataindex) return;
+
         collect(bigdataindex, &bigdataheap, 1);
+        Stack* bdi = bigdataindex;
+        do{
+            (*h)->heap[bdi->bdloc] = bdi->data;
+        }while(bdi=bdi->next);
+    }
 }
 
 /*
@@ -112,14 +138,16 @@ int evac(int pos, heap* from, heap* to){
     switch(from->heap[pos]){
         case WEAK:
             push(&weakptrs, to->hp);
+            memcpy(&theap[++(to->hp)], &fheap[pos+1], sizeof(int));
+            break;
+
         case BIGDATA:
             if(!(collectioncount % BIGDATACOLLECT))
-                push(&bigdataindex, fheap[pos+1]);
+                pushBD(&bigdataindex, fheap[pos+1], to->hp + 1);
 
         case INT:
         case BOOL:
         case SOFT:
-        
             memcpy(&theap[++(to->hp)], &fheap[pos+1], sizeof(int));
             break;
 
@@ -148,9 +176,12 @@ int evac(int pos, heap* from, heap* to){
             break;
 
         case BDHEAP:
+        {
             memcpy(&theap[++(to->hp)], &fheap[pos+1], (fheap[pos+1]+2)*sizeof(int));
-            to->hp += fheap[pos+1]+1;
-            break;
+            int x = to->hp -1;
+            to->hp += fheap[pos+1]+2;
+            return x;
+        }
 
         case PHANTOM:
             break;
