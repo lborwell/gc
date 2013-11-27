@@ -9,6 +9,10 @@ typedef struct {
     int hp;
 } heap;
 
+heap* datacons;
+heap* bigdataheap;
+Stack* bigdataindex;
+
 heap* heapCreate();
 void heapAdd(heap*, type, void*);
 void printHeap(heap*);

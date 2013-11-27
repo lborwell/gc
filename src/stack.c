@@ -1,5 +1,9 @@
 #include "stack.h"
 
+/*
+*  Simple stack implementation for garbage collector.
+*/
+
 Stack* createNode(int data){
 	Stack* s = malloc(sizeof(Stack));
 	s->data = data;
@@ -14,6 +18,7 @@ void push(Stack** s, int elem){
 	*s = n;
 }
 
+//Push BigData information
 void pushBD(Stack** s, int data, int bd){
 	Stack* n = createNode(data);
 	n->bdloc = bd;
@@ -26,7 +31,6 @@ int pop(Stack** s){
 		return -1;
 	Stack* r = *s;
 	*s = (*s)->next;
-	//r->next = NULL;
 	int d = r->data;
 	free(r);
 	return d;

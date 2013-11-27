@@ -8,6 +8,7 @@ int collectioncount;
 
 const int BIGDATACOLLECT = 2;
 
+/*
 int main(){
     Stack* s = stackCreate();
     push(&s,24);
@@ -27,8 +28,9 @@ int main(){
     *boo = 0;
     int data[] = { 2,4,28 };
     int bigdata[] = { 3,1,19,21,6 };
-    int range[] = { 0,0 };
+    int range[] = { 0,32 };
     int lambda[] = { 8,1,6 };
+    int phantom[] = { 4,0 };
     int* soft = malloc(sizeof(int));
     *soft = 0;
     int* weak = malloc(sizeof(int));
@@ -47,6 +49,7 @@ int main(){
     heapAdd(h,DATA,data);
     heapAdd(h,SOFT,soft);
     heapAdd(h,BIGDATA,bigdata);
+    heapAdd(h,PHANTOM,phantom);
 
     //print results
     puts("\nStarting heap:");
@@ -71,24 +74,31 @@ int main(){
     printHeap(bigdataheap);
 
     return 0;
-}
+} */
 
 /*
-*
+* RUN THE COLLECTOR
+* args
+* Stack* s -- local variable stack
+* heap** h -- current (pointer to pointer to) from-space
+* int bd -- are we collecting BigData heap? (bool: 0 false, otherwise true)
 */
 void collect(Stack* s, heap** h, int bd){
     heap* to = heapCreate();
     weakptrs = stackCreate();
 
-    if(!s) return;
+    // If stack is empty, return empty heap
+    if(!s){ 
+        *h = to;
+        return; 
+    }
 
-    //evacuate things pointed to from the stack
+    //evacuate things pointed to from the stack, update stack references
     do{
-        //printf("stack data before: %i  Stack bdloc before: %i\n",s->data,s->bdloc);
         s->data = evac(s->data, *h, to);
-        //printf("stack data after: %i  Stack bdloc after: %i\n",s->data,s->bdloc);
     }while(s=s->next);
 
+    // if collecting bigdata heap, no need to scavenge
     if(bd){
         *h = to;
         return;
@@ -97,6 +107,11 @@ void collect(Stack* s, heap** h, int bd){
     //scavenge the to-space
     scavenge(*h,to);
 
+    /*
+    * Check weak pointer references. If data is already forwarded, we know
+    * it's got another reference -- copy the forwarding pointer loc.
+    * Otherwise, we collect the data.
+    */
     int i;
     while((i = pop(&weakptrs)) != -1){
         if((*h)->heap[to->heap[i+1]] == FWD)
@@ -105,6 +120,7 @@ void collect(Stack* s, heap** h, int bd){
             to->heap[i+1] = -1;
     }
 
+    //Change reference of from-space to to-space
     free(*h);
     *h = to;
 
@@ -121,7 +137,8 @@ void collect(Stack* s, heap** h, int bd){
 }
 
 /*
-*
+* Evacuate. Copy value from from-space to to-space.
+* End of switch assumes pointer at last element of object.
 */
 int evac(int pos, heap* from, heap* to){
     int* theap = to->heap;
@@ -136,6 +153,8 @@ int evac(int pos, heap* from, heap* to){
     theap[to->hp] = fheap[pos];
 
     switch(from->heap[pos]){
+        // If it's weak, push it to the stack. We don't have to worry about
+        // pushing the same weak pointer multiple times.
         case WEAK:
             push(&weakptrs, to->hp);
             memcpy(&theap[++(to->hp)], &fheap[pos+1], sizeof(int));
@@ -151,6 +170,7 @@ int evac(int pos, heap* from, heap* to){
             memcpy(&theap[++(to->hp)], &fheap[pos+1], sizeof(int));
             break;
 
+        case PHANTOM:
         case RANGE:
             memcpy(&theap[++(to->hp)], &fheap[pos+1], 2*sizeof(int));
             (to->hp)++;
@@ -182,9 +202,6 @@ int evac(int pos, heap* from, heap* to){
             to->hp += fheap[pos+1]+2;
             return x;
         }
-
-        case PHANTOM:
-            break;
     }
 
     to->hp++;
@@ -195,20 +212,21 @@ int evac(int pos, heap* from, heap* to){
 }
 
 /*
-*
+* Scavenge. Evacuate references found in the to-heap.
+* End of switch assumes pointer at next tag.
 */
 void scavenge(heap* from, heap* to){
     int i=0;
     while(i < to->hp){
-        //printf("i:%i hp:%i\n",i,to->hp);
-        //printHeap(to);
         switch(to->heap[i]){
+            // Don't need to do anything.
             case INT:
             case BOOL:
             case WEAK:
                 i+=2;
                 break;
 
+            // Don't need to do anything.
             case STRING:
                 i++;
                 while(to->heap[i] != 0)
@@ -216,7 +234,7 @@ void scavenge(heap* from, heap* to){
                 i++;
                 break;
 
-            case PHANTOM:
+            // Evac both references.
             case RANGE:
                 to->heap[i+1] = evac(to->heap[i+1], from, to);
                 to->heap[i+2] = evac(to->heap[i+2], from, to);
@@ -261,7 +279,14 @@ void scavenge(heap* from, heap* to){
                     else
                         to->heap[i+1] = -1;
                     i+=2;
+                    break;
                 }
+
+            // If cons is false, don't collect value.
+            case PHANTOM:
+                to->heap[i+1] = to->heap[i+2] ? evac(to->heap[i+1], from, to) : -1;
+                i+=3;
+                break;
         }
     }
 }

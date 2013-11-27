@@ -1,10 +1,9 @@
 #include "heap.h"
 #define nextelem h->heap[++(h->hp)]
 
-heap* datacons;
-heap* bigdataheap;
-Stack* bigdataindex;
-
+/*
+* Create heaps
+*/
 heap* initHeaps(){
     dataConsCreate();
     bigdataHeapCreate();
@@ -33,12 +32,16 @@ void bigdataHeapCreate(){
 
 /*
  * Add data to heap
- * Assumes spaces is available
- * Will overwrite to-space if not
+ * Assumes space is available
+ * After add, hp will point to next empty cell
  */
 void heapAdd(heap* h, type t, void* data){
+    // Set next elem to input flag
     h->heap[h->hp] = t;
+
+    // Copy values to heap
     switch(t){
+        // Simple cases -- only one value to be copied
         case INT:
         case BOOL:
         case SOFT:
@@ -46,6 +49,7 @@ void heapAdd(heap* h, type t, void* data){
             nextelem = *(int*)data;
             break;
 
+        // Copy until terminating character
         case STRING:
             {
                 char* p = (char*)data;
@@ -55,6 +59,7 @@ void heapAdd(heap* h, type t, void* data){
                 break;
             }
 
+        // Range and phantom -- 2 values to copy
         case RANGE:
         case PHANTOM:
             {   
@@ -64,7 +69,8 @@ void heapAdd(heap* h, type t, void* data){
                 break;
             }
 
-         
+        // BigData and Lambda -- same structure, different order
+        // of arguments.
         case LAMBDA:
             {
                 int* p = (int*)data;
@@ -90,6 +96,9 @@ void heapAdd(heap* h, type t, void* data){
                 break;
             }
 
+        // Data does not contain length information
+        // copy value into constructor table, where length
+        // can be found
         case DATA:
             {
                 int* p = (int*)data;
@@ -107,6 +116,9 @@ void heapAdd(heap* h, type t, void* data){
     (h->hp)++;
 }
 
+/*
+* Print each heap cell
+*/
 void simplePrintHeap(heap* h){
     int i;
     for(i=0; i<HEAP_SIZE; i++)
@@ -114,11 +126,18 @@ void simplePrintHeap(heap* h){
     puts("");
 }
 
+/*
+* Pretty print the stack.
+* Each object will be printed on a new line
+* in a hopefully human-readable form.
+* Pointer assumed to be to last element read at end of switch
+*/
 void printHeap(heap* h){
-    int i=0;
+    int i=0;    //iterator
     int* heap = h->heap;
+
     while(i < h->hp){
-        printf("%i ", i);
+        printf("%i ", i);   //current cell loc
         switch(heap[i]){
             case INT:
                 printf("INT %i", heap[++i]);
@@ -183,7 +202,7 @@ void printHeap(heap* h){
                 printf("WEAK %i",heap[++i]);
                 break;
             case PHANTOM:
-                printf("PHANTOM %i %i",heap[i+1],heap[i+2]);
+                printf("PHANTOM %i c:%i",heap[i+1],heap[i+2]);
                 i+=2;
                 break;
             case RANGE:
