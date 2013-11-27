@@ -11,9 +11,11 @@ int* boo;
 int main(){
 	definePrims();
 	
-	Test* t = test1();
-    runTest(t);
+    testBasics();
 
+    runTest(test1());
+
+    testScavenge();
 
 
 	return 0;
@@ -26,6 +28,13 @@ void definePrims(){
     str = "hello";
     boo = malloc(sizeof(int));
     *boo = 0;
+}
+
+Test* createTest(){
+    Test* t = malloc(sizeof(Test));
+    t->h = initHeaps();
+    t->s = stackCreate();
+    return t;
 }
 
 void runTest(Test* t){
@@ -52,6 +61,192 @@ void runTest(Test* t){
     printHeap(bigdataheap);
 }
 
+void testScavenge(){
+    runTest(scavengeBD());
+    runTest(scavengeRange());
+    runTest(scavengeLambda());
+    runTest(scavengeWeakExists());
+    runTest(scavengeWeakNoExists());
+    runTest(scavengePhantomFinal());
+    runTest(scavengePhantomNoFinal());
+}
+
+void testBasics(){
+    runTest(testInt());
+    runTest(testBool());
+    runTest(testString());
+    runTest(testData());
+    runTest(testBigdata());
+    runTest(testRange());
+    runTest(testLambda());
+    runTest(testSoft());
+    runTest(testPhantom());
+    runTest(testWeak());
+}
+
+Test* testInt(){
+    Test* t = createTest();
+    int* data = malloc(sizeof(int)); *data = 5;
+    heapAdd(t->h,INT,data);
+    push(&(t->s),0);
+    return t;
+}
+
+Test* testBool(){
+    Test* t = createTest();
+    int* data = malloc(sizeof(int)); *data = 0;
+    heapAdd(t->h,BOOL,data);
+    data = malloc(sizeof(int)); *data = 1;
+    heapAdd(t->h,BOOL,data);
+    push(&(t->s),0);
+    push(&(t->s),2);
+    return t;
+}
+
+Test* testString(){
+    Test* t = createTest();
+    char* data = "hello";
+    heapAdd(t->h,STRING,data);
+    push(&(t->s),0);
+    return t;
+}
+
+Test* testData(){
+    Test* t = createTest();
+    int data[] = { 2, 0, 0 };
+    heapAdd(t->h,DATA,data);
+    push(&(t->s),0);
+    return t;
+}
+
+Test* testBigdata(){
+    Test* t = createTest();
+    int data[] = { 2, 0, 0, 0 };
+    heapAdd(t->h,BIGDATA,data);
+    push(&(t->s),0);
+    return t;
+}
+
+Test* testRange(){
+    Test* t = createTest();
+    int data[] = { 0, 0 };
+    heapAdd(t->h,RANGE,data);
+    push(&(t->s),0);
+    return t;
+}
+
+Test* testLambda(){
+    Test* t = createTest();
+    int data[] = { 0, 2, 0, 0 };
+    heapAdd(t->h,LAMBDA,data);
+    push(&(t->s),0);
+    return t;
+}
+
+Test* testSoft(){
+    Test* t = createTest();
+    int* data = malloc(sizeof(int)); *data = 0;
+    heapAdd(t->h,SOFT,data);
+    push(&(t->s),0);
+    return t;
+}
+
+Test* testPhantom(){
+    Test* t = createTest();
+    int data[] = { 0,1 };
+    heapAdd(t->h,PHANTOM,data);
+    int data1[] = { 0,0 };
+    heapAdd(t->h,PHANTOM,data1);
+    push(&(t->s),0);
+    return t;
+}
+
+Test* testWeak(){
+    Test* t = createTest();
+    int* data = malloc(sizeof(int)); *data = 0;
+    heapAdd(t->h,WEAK,data);
+    push(&(t->s),0);
+    return t;
+}
+
+Test* scavengeBD(){
+    Test* t = createTest();
+
+    int data[] = {2,0,0,2};
+    heapAdd(t->h, INT, inn);
+    heapAdd(t->h, BOOL, boo);
+    heapAdd(t->h, BIGDATA, data);
+
+    push(&(t->s),4);
+    return t;
+}
+
+Test* scavengeRange(){
+    Test* t = createTest();
+
+    int data[] = { 0, 5};
+    heapAdd(t->h, INT, inn);
+    heapAdd(t->h, RANGE, data);
+    heapAdd(t->h, STRING, str);
+
+    push(&(t->s),2);
+    return t;
+}
+
+Test* scavengeLambda(){
+    Test* t = createTest();
+
+    int data[] = {0,2,0,2};
+    heapAdd(t->h, INT, inn);
+    heapAdd(t->h, BOOL, boo);
+    heapAdd(t->h, LAMBDA, data);
+
+    push(&(t->s),4);
+    return t;   
+}
+
+Test* scavengeWeakExists(){
+    Test* t = createTest();
+    int* data = malloc(sizeof(int)); *data = 0;
+    heapAdd(t->h, INT, inn);
+    heapAdd(t->h, WEAK, data);
+
+    push(&(t->s), 0);
+    push(&(t->s), 2);
+    return t;
+}
+
+Test* scavengeWeakNoExists(){
+    Test* t = createTest();
+    int* data = malloc(sizeof(int)); *data = 0;
+    heapAdd(t->h, INT, inn);
+    heapAdd(t->h, WEAK, data);
+
+    push(&(t->s), 2);
+    return t;
+}
+
+Test* scavengePhantomFinal(){
+    Test* t = createTest();
+    int data[] = { 0,0 };
+
+    heapAdd(t->h, INT, inn);
+    heapAdd(t->h, PHANTOM, data);
+
+    push(&(t->s), 2);
+    return t;
+}
+
+Test* scavengePhantomNoFinal(){
+    Test* t = createTest();
+    int data[] = { 0,1 };
+
+    heapAdd(t->h, INT, inn);
+    heapAdd(t->h, PHANTOM, data);
+
+    push(&(t->s), 2);
+    return t;
+}
 
 Test* test1(){
 	Test* t = malloc(sizeof(Test));

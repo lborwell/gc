@@ -49,6 +49,7 @@ void freeStack(Stack* s){
 }
 
 void printStack(Stack* n){
+	if(!n) return;
 	if(n->next)
 		printStack(n->next);
 	if(n)
