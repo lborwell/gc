@@ -1,7 +1,7 @@
 #include "stack.h"
 #include <string.h>
 
-#define HEAP_SIZE 256
+#define HEAP_SIZE 50
 
 typedef struct {
     int heap[HEAP_SIZE];

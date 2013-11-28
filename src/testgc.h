@@ -12,6 +12,9 @@ void definePrims();
 void testBasics();
 Test* createTest();
 Test* test1();
+Test* test2();
+Test* bigdatacoll();
+Test* bigdatanocoll();
 
 Test* testInt();    
 Test* testBool();   
@@ -31,3 +34,5 @@ Test* scavengeWeakNoExists();
 Test* scavengePhantomFinal();
 Test* scavengePhantomNoFinal();
 void testScavenge();
+
+void testComp(int);

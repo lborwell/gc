@@ -3,6 +3,7 @@
 extern heap* bigdataheap;
 extern int collectioncount;
 
+//extern int counter;
 
 int* inn;
 char* str;
@@ -12,11 +13,20 @@ int main(){
 	definePrims();
 	
     testBasics();
-
-    runTest(test1());
-
     testScavenge();
+    runTest(test1());
+    runTest(test2());
+    runTest(bigdatacoll());
+    runTest(bigdatanocoll());
 
+    /*int i = 1;
+    while(i<85){
+        puts("test");
+        counter = 0;
+        testComp(i);
+        printf("%i, %i\n",i,counter);
+        i++;
+    }*/
 
 	return 0;
 }
@@ -28,6 +38,20 @@ void definePrims(){
     str = "hello";
     boo = malloc(sizeof(int));
     *boo = 0;
+}
+
+void testComp(int i){
+    Test* t = createTest();
+    int j;
+    int* r = malloc(sizeof(int)*2);
+    r[0] = 0;
+    for(j=0; j<i; j++){
+        r[1] = (j+1)*3;
+        heapAdd(t->h,RANGE,r);
+    }
+    //simplePrintHeap(t->h);
+    push(&(t->s),0);
+    collect(t->s, &(t->h), 0);
 }
 
 Test* createTest(){
@@ -282,6 +306,71 @@ Test* test1(){
     heapAdd(h,SOFT,soft);
     heapAdd(h,BIGDATA,bigdata);
     heapAdd(h,PHANTOM,phantom);
+
+    return t;
+}
+
+Test* test2(){
+    Test* t = createTest();
+    push(&(t->s),24);
+    push(&(t->s),13);
+    push(&(t->s),0);
+
+    collectioncount = 2;
+    int data[] = { 2,4,28 };
+    int bigdata[] = { 3,1,19,21,2 };
+    int range[] = { 0,32 };
+    int lambda[] = { 8,1,6 };
+    int phantom[] = { 4,1 };
+    int* soft = malloc(sizeof(int));
+    *soft = 0;
+    int* weak = malloc(sizeof(int));
+    *weak = 2;
+
+    //build test heap
+    heap* h = t->h;
+    heapAdd(h,INT,inn);
+    heapAdd(h,BOOL,boo);
+    heapAdd(h,WEAK,weak);
+    heapAdd(h,STRING,str);
+    heapAdd(h,BIGDATA,bigdata);
+    heapAdd(h,LAMBDA,lambda);
+    heapAdd(h,INT,inn);
+    heapAdd(h,RANGE,range);
+    heapAdd(h,DATA,data);
+    heapAdd(h,SOFT,soft);
+    heapAdd(h,BIGDATA,bigdata);
+    heapAdd(h,PHANTOM,phantom);
+
+    return t;
+}
+
+Test* bigdatacoll(){
+    Test* t = createTest();
+    push(&(t->s),0);
+
+    collectioncount = 2;
+    int bigdata[] = { 3,1,0,0,0 };
+    
+    //build test heap
+    heap* h = t->h;
+    heapAdd(h,BIGDATA,bigdata);
+    heapAdd(h,BIGDATA,bigdata);
+
+    return t;
+}
+
+Test* bigdatanocoll(){
+    Test* t = createTest();
+    push(&(t->s),0);
+
+    collectioncount = 1;
+    int bigdata[] = { 3,1,0,0,0 };
+    
+    //build test heap
+    heap* h = t->h;
+    heapAdd(h,BIGDATA,bigdata);
+    heapAdd(h,BIGDATA,bigdata);
 
     return t;
 }

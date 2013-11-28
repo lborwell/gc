@@ -6,6 +6,8 @@ extern Stack* bigdataindex;
 Stack* weakptrs;
 int collectioncount;
 
+//int counter;
+
 const int BIGDATACOLLECT = 2;
 
 /*
@@ -73,6 +75,7 @@ void collect(Stack* s, heap** h, int bd){
 * End of switch assumes pointer at last element of object.
 */
 int evac(int pos, heap* from, heap* to){
+    //counter++;
     int* theap = to->heap;
     int* fheap = from->heap;
 
